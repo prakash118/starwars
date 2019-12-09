@@ -1,26 +1,51 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import { connect } from "react-redux";
+import styled from "styled-components";
 
-function App() {
+import { asyncFetchData } from "./action";
+import { apiURL } from "./const";
+
+import Search from "./Components/Search";
+import List from "./Components/List";
+import Pagination from "./Components/Pagination";
+
+const Wrapper = styled.div`
+  text-align: center;
+`;
+
+const App = ({
+  asyncFetchData,
+  data,
+  nextPageURL,
+  previousPageURL,
+  totalPages,
+  loading
+}) => {
+  useEffect(() => {
+    asyncFetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSearch = text => asyncFetchData(`${apiURL}?search=${text}`);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Wrapper>
+      <h1>Star Wars: Characters</h1>
+      <Search onSearch={handleSearch} />
+      {!loading ? <List data={data} /> : <div>Loading...</div>}
+      <Pagination
+        loading={loading}
+        total={totalPages}
+        next={nextPageURL}
+        previous={previousPageURL}
+        onClick={asyncFetchData}
+      />
+    </Wrapper>
   );
-}
+};
 
-export default App;
+const mapStateToProps = state => state;
+
+const mapDispatchToProps = { asyncFetchData };
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
